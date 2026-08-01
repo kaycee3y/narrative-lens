@@ -1,73 +1,137 @@
 "use client";
-
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+const styles = [
+  { id: "teen", label: "Teen-Friendly" },
+  { id: "neutral", label: "Neutral" },
+  { id: "story", label: "Story" },
+  { id: "comic", label: "Comic Script" },
+];
+
+const MAX_CHARS = 4000;
+
 export default function AppPage() {
+  const router = useRouter();
   const [input, setInput] = useState("");
   const [style, setStyle] = useState("teen");
+  const [mode, setMode] = useState<"single" | "compare">("single");
   const [output, setOutput] = useState("");
+  const [versions, setVersions] = useState<{ teen: string; neutral: string; story: string } | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({
+    teen: true,
+    neutral: false,
+    story: false,
+  });
 
   const handleGenerate = async () => {
-    if (!input.trim()) return;
-
     setLoading(true);
     setOutput("");
+    setVersions(null);
+    setError("");
 
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text: input, style }),
+        body: JSON.stringify(
+          mode === "compare" ? { text: input, mode: "compare" } : { text: input, style }
+        ),
       });
 
       const data = await res.json();
 
-      if (data.narrative) {
+      if (!res.ok) {
+        setError(data.error || "Something went wrong. Please try again.");
+      } else if (mode === "compare" && data.versions) {
+        setVersions(data.versions);
+        setExpanded({ teen: true, neutral: false, story: false });
+      } else if (data.narrative) {
         setOutput(data.narrative);
       } else {
-        setOutput("Failed to generate narrative. Please try again.");
+        setError("Failed to generate narrative. Please try again.");
       }
-    } catch (error) {
-      setOutput("Something went wrong. Please try again.");
+    } catch (err) {
+      setError("Network error — check your connection and try again.");
     }
 
     setLoading(false);
   };
 
+  const handleCopy = async (text: string, key: string) => {
+    await navigator.clipboard.writeText(text);
+    setCopiedKey(key);
+    setTimeout(() => setCopiedKey(null), 1500);
+  };
+
+  const charCount = input.length;
+  const overLimit = charCount > MAX_CHARS;
+
   return (
     <div className="min-h-screen bg-[#08090A] text-[#F4F4F5] animate-fade-in">
       {/* Navbar */}
-      <nav className="flex items-center justify-between px-6 py-4 border-b border-[#27272A]">
+      {/* Navbar */}
+      <nav className="flex items-center gap-4 px-6 py-4 border-b border-[#27272A]">
+        <button
+          onClick={() => router.push("/")}
+          className="flex items-center gap-1 text-sm text-[#A1A1AA] hover:text-[#F4F4F5] transition-all duration-200"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          Back
+        </button>
         <a href="/" className="flex items-center gap-2">
-          <div className="w-5 h-5 rounded-full bg-[#5E6AD2]" />
+          <div className="w-6 h-6 rounded-full bg-[#5E6AD2]" />
           <span className="font-medium">Narrative Lens</span>
         </a>
-        <span className="text-sm text-[#71717A]">MVP</span>
       </nav>
 
-      <div className="max-w-5xl mx-auto px-6 py-10">
-        <h1 className="text-2xl font-semibold mb-2">Create a Narrative</h1>
-        <p className="text-[#A1A1AA] mb-8 text-sm">
-          Paste any news text and transform it into a clearer story.
-        </p>
+      <div className="max-w-3xl mx-auto px-6 py-10">
+        {/* Mode Toggle */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setMode("single")}
+            className={`px-4 py-2 rounded-lg text-sm transition-all duration-200 ${
+              mode === "single"
+                ? "bg-[#5E6AD2] text-white"
+                : "bg-[#18181B] text-[#A1A1AA] hover:bg-[#27272A]"
+            }`}
+          >
+            Single Style
+          </button>
+          <button
+            onClick={() => setMode("compare")}
+            className={`px-4 py-2 rounded-lg text-sm transition-all duration-200 ${
+              mode === "compare"
+                ? "bg-[#5E6AD2] text-white"
+                : "bg-[#18181B] text-[#A1A1AA] hover:bg-[#27272A]"
+            }`}
+          >
+            Compare Perspectives
+          </button>
+        </div>
 
-        {/* Input Area */}
-        <div className="space-y-4 mb-8">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Paste news article text here..."
-            className="w-full h-40 bg-[#111113] border border-[#27272A] rounded-xl p-4 text-sm resize-none focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#71717A] transition-all duration-200"
-          />
+        {/* Textarea */}
+        <textarea
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          placeholder="Paste news article text here..."
+          className={`w-full h-40 bg-[#111113] border rounded-xl p-4 text-sm resize-none focus:outline-none transition-all duration-200 placeholder:text-[#71717A] ${
+            overLimit ? "border-red-500 focus:border-red-500" : "border-[#27272A] focus:border-[#5E6AD2]"
+          }`}
+        />
+        <div className={`text-xs mt-1 text-right ${overLimit ? "text-red-400" : "text-[#71717A]"}`}>
+          {charCount} / {MAX_CHARS}
+        </div>
 
-          {/* Style Selector */}
-          <div className="flex gap-3">
-            {[
-              { id: "teen", label: "Teen Friendly" },
-              { id: "neutral", label: "Neutral" },
-              { id: "story", label: "Story Style" },
-            ].map((item) => (
+        {/* Style Selector — only in single mode */}
+        {mode === "single" && (
+          <div className="flex flex-wrap gap-2 mt-4 mb-6">
+            {styles.map((item) => (
               <button
                 key={item.id}
                 onClick={() => setStyle(item.id)}
@@ -81,29 +145,112 @@ export default function AppPage() {
               </button>
             ))}
           </div>
+        )}
 
-          <button
-            onClick={handleGenerate}
-            disabled={loading || !input.trim()}
-            className="px-6 py-3 bg-[#5E6AD2] hover:bg-[#7170FF] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-          >
-            {loading ? "Generating..." : "Generate Narrative"}
-          </button>
-        </div>
+        {mode === "compare" && (
+          <p className="text-sm text-[#A1A1AA] mt-4 mb-6">
+            Generates Teen-Friendly, Neutral, and Story versions side by side.
+          </p>
+        )}
 
-        {/* Output Area */}
-        {(output || loading) && (
-          <div className="border border-[#27272A] rounded-xl bg-[#111113] p-6 animate-scale-in">
-            <h2 className="text-sm font-medium text-[#A1A1AA] mb-3">
-              Generated Narrative
-            </h2>
-            {loading ? (
-              <p className="text-[#71717A] text-sm">Thinking...</p>
-            ) : (
-              <div className="whitespace-pre-wrap text-[15px] leading-relaxed">
-                {output}
-              </div>
-            )}
+        {/* Generate Button */}
+        <button
+          onClick={handleGenerate}
+          disabled={loading || !input.trim() || overLimit}
+          className="px-6 py-3 bg-[#5E6AD2] hover:bg-[#7170FF] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+        >
+          {loading ? "Generating..." : "Generate Narrative"}
+        </button>
+
+        {/* Error */}
+        {error && (
+          <div className="mt-6 border border-red-500/40 bg-red-500/10 text-red-300 rounded-xl p-4 text-sm animate-fade-in">
+            {error}
+          </div>
+        )}
+
+        {/* Loading skeleton */}
+        {loading && (
+          <div className="mt-6 space-y-3 animate-fade-in">
+            <div className="h-4 bg-[#18181B] rounded w-3/4 animate-pulse" />
+            <div className="h-4 bg-[#18181B] rounded w-full animate-pulse" />
+            <div className="h-4 bg-[#18181B] rounded w-5/6 animate-pulse" />
+          </div>
+        )}
+
+        {/* Single Output */}
+        {!loading && output && (
+          <div className="mt-6 border border-[#27272A] rounded-xl bg-[#111113] p-6 animate-scale-in">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-medium text-[#A1A1AA]">Generated Narrative</h2>
+              <button
+                onClick={() => handleCopy(output, "single")}
+                className="text-xs px-3 py-1 rounded-md bg-[#18181B] hover:bg-[#27272A] transition-all duration-200"
+              >
+                {copiedKey === "single" ? "Copied!" : "Copy"}
+              </button>
+            </div>
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-[#D4D4D8]">{output}</p>
+          </div>
+        )}
+
+        {/* Compare Output — collapsible rows */}
+        {!loading && versions && (
+          <div className="mt-6 flex flex-col gap-3 animate-scale-in">
+            {(["teen", "neutral", "story"] as const).map((key) => {
+              const isOpen = expanded[key];
+              const text = versions[key];
+              const preview = text.split("\n").find((l) => l.trim().length > 0) || "";
+
+              return (
+                <div
+                  key={key}
+                  className="border border-[#27272A] rounded-xl bg-[#111113] overflow-hidden transition-all duration-200 hover:border-[#3F3F46]"
+                >
+                  <button
+                    onClick={() => setExpanded((prev) => ({ ...prev, [key]: !prev[key] }))}
+                    className="w-full flex items-center justify-between px-5 py-4 text-left"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <svg
+                        className={`w-4 h-4 text-[#71717A] flex-shrink-0 transition-transform duration-200 ${
+                          isOpen ? "rotate-90" : ""
+                        }`}
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                      <span className="text-sm font-medium capitalize flex-shrink-0">{key}</span>
+                      {!isOpen && (
+                        <span className="text-sm text-[#71717A] truncate">— {preview}</span>
+                      )}
+                    </div>
+                    <span
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopy(text, key);
+                      }}
+                      className="text-xs px-3 py-1 rounded-md bg-[#18181B] hover:bg-[#27272A] transition-all duration-200 flex-shrink-0 ml-3"
+                    >
+                      {copiedKey === key ? "Copied!" : "Copy"}
+                    </span>
+                  </button>
+
+                  <div
+                    className="grid transition-all duration-300 ease-in-out"
+                    style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
+                  >
+                    <div className="overflow-hidden">
+                      <p className="px-5 pb-5 whitespace-pre-wrap text-sm leading-relaxed text-[#D4D4D8] border-t border-[#27272A] pt-4">
+                        {text}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
