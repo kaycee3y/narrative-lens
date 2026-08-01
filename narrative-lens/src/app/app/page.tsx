@@ -14,25 +14,29 @@ export default function AppPage() {
     setLoading(true);
     setOutput("");
 
-    // Simulate thinking time
-    await new Promise((resolve) => setTimeout(resolve, 1400));
+    try {
+      const res = await fetch("/api/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text: input, style }),
+      });
 
-    const shortInput = input.length > 300 ? input.slice(0, 300) + "..." : input;
+      const data = await res.json();
 
-    const responses: Record<string, string> = {
-      teen: `Teen-Friendly Version:\n\n${shortInput}\n\nIn simple words: This news is about something important that is happening right now. The main idea is that people are dealing with a big situation, and it can affect many of us. Understanding what is really going on helps us think clearly instead of just reacting to headlines.`,
+      if (data.narrative) {
+        setOutput(data.narrative);
+      } else {
+        setOutput("Failed to generate narrative. Please try again.");
+      }
+    } catch (error) {
+      setOutput("Something went wrong. Please try again.");
+    }
 
-      neutral: `Neutral Version:\n\n${shortInput}\n\nKey points:\n• The article reports on a current event\n• Multiple sides or factors are involved\n• The outcome is still developing\n\nThis version focuses on facts and avoids strong emotional language.`,
-
-      story: `Story Style:\n\nNot long ago, something important began to unfold...\n\n${shortInput}\n\nThis moment shows how real events can shape the lives of ordinary people. Behind the headlines are choices, challenges, and consequences that continue to develop.`,
-    };
-
-    setOutput(responses[style] || responses.teen);
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-[#08090A] text-[#F4F4F5]">
+    <div className="min-h-screen bg-[#08090A] text-[#F4F4F5] animate-fade-in">
       {/* Navbar */}
       <nav className="flex items-center justify-between px-6 py-4 border-b border-[#27272A]">
         <a href="/" className="flex items-center gap-2">
@@ -54,7 +58,7 @@ export default function AppPage() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Paste news article text here..."
-            className="w-full h-40 bg-[#111113] border border-[#27272A] rounded-xl p-4 text-sm resize-none focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#71717A]"
+            className="w-full h-40 bg-[#111113] border border-[#27272A] rounded-xl p-4 text-sm resize-none focus:outline-none focus:border-[#5E6AD2] placeholder:text-[#71717A] transition-all duration-200"
           />
 
           {/* Style Selector */}
@@ -67,7 +71,7 @@ export default function AppPage() {
               <button
                 key={item.id}
                 onClick={() => setStyle(item.id)}
-                className={`px-4 py-2 rounded-lg text-sm transition ${
+                className={`px-4 py-2 rounded-lg text-sm transition-all duration-200 ${
                   style === item.id
                     ? "bg-[#5E6AD2] text-white"
                     : "bg-[#18181B] text-[#A1A1AA] hover:bg-[#27272A]"
@@ -81,7 +85,7 @@ export default function AppPage() {
           <button
             onClick={handleGenerate}
             disabled={loading || !input.trim()}
-            className="px-6 py-3 bg-[#5E6AD2] hover:bg-[#7170FF] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition"
+            className="px-6 py-3 bg-[#5E6AD2] hover:bg-[#7170FF] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
           >
             {loading ? "Generating..." : "Generate Narrative"}
           </button>
@@ -89,7 +93,7 @@ export default function AppPage() {
 
         {/* Output Area */}
         {(output || loading) && (
-          <div className="border border-[#27272A] rounded-xl bg-[#111113] p-6">
+          <div className="border border-[#27272A] rounded-xl bg-[#111113] p-6 animate-scale-in">
             <h2 className="text-sm font-medium text-[#A1A1AA] mb-3">
               Generated Narrative
             </h2>
