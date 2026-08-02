@@ -1,6 +1,7 @@
 "use client";
+
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
 const styles = [
   { id: "teen", label: "Teen-Friendly" },
@@ -26,6 +27,17 @@ export default function AppPage() {
     neutral: false,
     story: false,
   });
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-resize textarea to fit pasted content, capped at 320px
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "120px";
+    const newHeight = Math.min(el.scrollHeight, 320);
+    el.style.height = `${newHeight}px`;
+  }, [input]);
 
   const handleGenerate = async () => {
     setLoading(true);
@@ -71,10 +83,15 @@ export default function AppPage() {
   const overLimit = charCount > MAX_CHARS;
 
   return (
-    <div className="min-h-screen bg-[#08090A] text-[#F4F4F5] animate-fade-in">
+    <div className="min-h-screen bg-[#08090A] text-[#F4F4F5] animate-fade-in relative overflow-hidden">
+      {/* Ambient background glow */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#5E6AD2]/10 rounded-full blur-[128px] animate-pulse" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-[#5E6AD2]/10 rounded-full blur-[128px] animate-pulse [animation-delay:700ms]" />
+      </div>
+
       {/* Navbar */}
-      {/* Navbar */}
-      <nav className="flex items-center gap-4 px-6 py-4 border-b border-[#27272A]">
+      <nav className="relative flex items-center gap-4 px-6 py-4 border-b border-[#27272A]">
         <button
           onClick={() => router.push("/")}
           className="flex items-center gap-1 text-sm text-[#A1A1AA] hover:text-[#F4F4F5] transition-all duration-200"
@@ -85,14 +102,18 @@ export default function AppPage() {
           Back
         </button>
         <a href="/" className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full bg-[#5E6AD2]" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="#5E6AD2" strokeWidth="2" />
+            <circle cx="12" cy="12" r="3.5" fill="#5E6AD2" />
+            <path d="M12 3v3M12 18v3M3 12h3M18 12h3" stroke="#5E6AD2" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
           <span className="font-medium">Narrative Lens</span>
         </a>
       </nav>
 
-      <div className="max-w-3xl mx-auto px-6 py-10">
+      <div className="relative max-w-3xl mx-auto px-6 py-10">
         {/* Mode Toggle */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex flex-col sm:flex-row gap-2 mb-6">
           <button
             onClick={() => setMode("single")}
             className={`px-4 py-2 rounded-lg text-sm transition-all duration-200 ${
@@ -115,13 +136,16 @@ export default function AppPage() {
           </button>
         </div>
 
-        {/* Textarea */}
+        {/* Textarea — auto-resizing, glowing focus ring */}
         <textarea
+          ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Paste news article text here..."
-          className={`w-full h-40 bg-[#111113] border rounded-xl p-4 text-sm resize-none focus:outline-none transition-all duration-200 placeholder:text-[#71717A] ${
-            overLimit ? "border-red-500 focus:border-red-500" : "border-[#27272A] focus:border-[#5E6AD2]"
+          className={`w-full min-h-[120px] max-h-[320px] bg-[#111113]/80 backdrop-blur-sm border rounded-xl p-4 text-sm resize-none overflow-y-auto focus:outline-none transition-all duration-200 placeholder:text-[#71717A] ${
+            overLimit
+              ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-500/20"
+              : "border-[#27272A] focus:border-[#5E6AD2] focus:ring-2 focus:ring-[#5E6AD2]/20"
           }`}
         />
         <div className={`text-xs mt-1 text-right ${overLimit ? "text-red-400" : "text-[#71717A]"}`}>
@@ -157,7 +181,7 @@ export default function AppPage() {
         <button
           onClick={handleGenerate}
           disabled={loading || !input.trim() || overLimit}
-          className="px-6 py-3 bg-[#5E6AD2] hover:bg-[#7170FF] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+          className="w-full sm:w-auto px-6 py-3 bg-[#5E6AD2] hover:bg-[#7170FF] disabled:opacity-50 disabled:cursor-not-allowed rounded-lg font-medium transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
         >
           {loading ? "Generating..." : "Generate Narrative"}
         </button>
