@@ -86,7 +86,6 @@ export default function Home() {
             How it works.
           </h2>
 
-          {/* Wavy connector (decorative, sits behind the columns) */}
           <div className="relative">
             <svg
               viewBox="0 0 800 200"
@@ -104,11 +103,16 @@ export default function Home() {
             </svg>
 
             <div className="relative grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-6">
-              {/* Step 1 */}
+              {/* Step 1 — Paste an article: folder icon */}
               <div className="flex flex-col items-center text-center md:translate-y-16">
                 <div className="relative w-14 h-14 rounded-2xl bg-[#111113] border border-[#5E6AD2]/40 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[#5E6AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M9 12h6m-6 4h6M9 8h1m5 12H8a2 2 0 01-2-2V6a2 2 0 012-2h5.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V18a2 2 0 01-2 2z" />
+                  <svg className="w-6 h-6 text-[#5E6AD2]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path
+                      d="M3 7a2 2 0 012-2h4l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"
+                      strokeWidth="1.6"
+                      strokeLinejoin="round"
+                    />
+                    <path d="M8 11h6M8 14h4" strokeWidth="1.4" strokeLinecap="round" />
                   </svg>
                   <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#5E6AD2] text-[10px] flex items-center justify-center font-medium">1</span>
                 </div>
@@ -118,11 +122,15 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Step 2 */}
+              {/* Step 2 — Pick a lens: AI sparkle icon */}
               <div className="flex flex-col items-center text-center">
                 <div className="relative w-14 h-14 rounded-2xl bg-[#111113] border border-[#5E6AD2]/40 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[#5E6AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 10l-5.714 2.143L13 19l-2.286-6.857L5 10l5.714-2.143L13 1z" />
+                  <svg className="w-6 h-6 text-[#5E6AD2]" viewBox="0 0 24 24" fill="none">
+                    <rect x="3" y="3" width="18" height="18" rx="6" stroke="currentColor" strokeWidth="1.6" />
+                    <path
+                      d="M12 6.5l1.1 3 3 1.1-3 1.1-1.1 3-1.1-3-3-1.1 3-1.1 1.1-3z"
+                      fill="currentColor"
+                    />
                   </svg>
                   <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#5E6AD2] text-[10px] flex items-center justify-center font-medium">2</span>
                 </div>
@@ -132,11 +140,14 @@ export default function Home() {
                 </p>
               </div>
 
-              {/* Step 3 */}
+              {/* Step 3 — Read & share: connected nodes icon */}
               <div className="flex flex-col items-center text-center md:translate-y-10">
                 <div className="relative w-14 h-14 rounded-2xl bg-[#111113] border border-[#5E6AD2]/40 flex items-center justify-center mb-4">
-                  <svg className="w-6 h-6 text-[#5E6AD2]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M8.684 13.342a4 4 0 106.632 0M8.684 10.658a4 4 0 116.632 0M18 6a3 3 0 11-6 0 3 3 0 016 0zM9 18a3 3 0 11-6 0 3 3 0 016 0zm9 0a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <svg className="w-6 h-6 text-[#5E6AD2]" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <circle cx="18" cy="6" r="2.3" fill="currentColor" />
+                    <circle cx="6" cy="12" r="2.3" fill="currentColor" />
+                    <circle cx="18" cy="18" r="2.3" fill="currentColor" />
+                    <path d="M8.1 10.8L15.9 7.2M8.1 13.2L15.9 16.8" strokeWidth="1.6" />
                   </svg>
                   <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-[#5E6AD2] text-[10px] flex items-center justify-center font-medium">3</span>
                 </div>
@@ -150,7 +161,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Demo Preview — browser chrome card */}
+      {/* Demo Preview — table UI */}
       <section className="max-w-4xl mx-auto px-6 pb-24">
         <h2 className="text-3xl font-semibold text-center mb-4">See it in action</h2>
         <p className="text-[#A1A1AA] text-center mb-10 max-w-xl mx-auto">
@@ -170,33 +181,55 @@ export default function Home() {
           </div>
 
           <div className="p-6 md:p-8">
-            <p className="text-xs text-[#71717A] mb-4 uppercase tracking-wide">Original headline</p>
-            <p className="text-sm text-[#D4D4D8] mb-6 pb-6 border-b border-[#27272A]">
+            <p className="text-xs text-[#71717A] mb-2 uppercase tracking-wide">Original headline</p>
+            <p className="text-sm text-[#D4D4D8]">
               &ldquo;Local chess club sees unexpected feline visitor during Wednesday match.&rdquo;
             </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div>
-                <p className="text-xs font-medium text-[#5E6AD2] mb-2 uppercase tracking-wide">Teen-Friendly</p>
-                <p className="text-sm text-[#A1A1AA] leading-relaxed">
-                  So this is wild — a cat literally strolled into a chess club and started watching the games like it owned the place.
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-[#5E6AD2] mb-2 uppercase tracking-wide">Neutral</p>
-                <p className="text-sm text-[#A1A1AA] leading-relaxed">
-                  A cat entered a local chess club during a scheduled match and remained near the players for the session&apos;s duration.
-                </p>
-              </div>
-              <div>
-                <p className="text-xs font-medium text-[#5E6AD2] mb-2 uppercase tracking-wide">Story</p>
-                <p className="text-sm text-[#A1A1AA] leading-relaxed">
-                  It was an ordinary Wednesday evening — until a curious cat wandered in and turned the quiet chess club into the talk of the town.
-                </p>
-              </div>
-            </div>
           </div>
 
-          <div className="flex items-center justify-between px-6 pb-4 text-xs text-[#71717A]">
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="bg-[#5E6AD2]">
+                  <th className="text-left text-white text-sm font-semibold px-6 py-4 w-40">
+                    Style
+                  </th>
+                  <th className="text-left text-white text-sm font-semibold px-6 py-4">
+                    Rewritten Narrative
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-[#0D0D0F]">
+                  <td className="px-6 py-5 text-sm font-medium text-[#5E6AD2] align-top border-t border-[#27272A]">
+                    Teen-Friendly
+                  </td>
+                  <td className="px-6 py-5 text-sm text-[#A1A1AA] leading-relaxed align-top border-t border-[#27272A]">
+                    So this is wild — a cat literally strolled into a chess club and started watching the games like it owned the place.
+                  </td>
+                </tr>
+                <tr className="bg-[#111113]">
+                  <td className="px-6 py-5 text-sm font-medium text-[#5E6AD2] align-top border-t border-[#27272A]">
+                    Neutral
+                  </td>
+                  <td className="px-6 py-5 text-sm text-[#A1A1AA] leading-relaxed align-top border-t border-[#27272A]">
+                    A cat entered a local chess club during a scheduled match and remained near the players for the session&apos;s duration.
+                  </td>
+                </tr>
+                <tr className="bg-[#0D0D0F]">
+                  <td className="px-6 py-5 text-sm font-medium text-[#5E6AD2] align-top border-t border-[#27272A]">
+                    Story
+                  </td>
+                  <td className="px-6 py-5 text-sm text-[#A1A1AA] leading-relaxed align-top border-t border-[#27272A]">
+                    It was an ordinary Wednesday evening — until a curious cat wandered in and turned the quiet chess club into the talk of the town.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex items-center justify-between px-6 py-4 text-xs text-[#71717A] border-t border-[#27272A]">
             <span>2026 essentials.</span>
             <a href="/app" className="hover:text-[#5E6AD2] transition-all duration-200">
               ↗ narrativelens.app
